@@ -1,5 +1,5 @@
 # Unsupervised Domain Adaptation for Vertebrae Detection and Identification
-This repository contains the code I used to produce results for my project thesis at Zurich University of Applied Sciences.
+This repository contains the code Pascal used to produce results for his project thesis at Zurich University of Applied Sciences (see [here](https://github.com/sagerpascal/uda-vertebrae-identification)).
 By using a new loss function based on sanity checks, we achieve unsupervised domain adaptation for vertebrae detection and identification.
 
 I extended the work of [McCouat and Glocker, "Vertebrae Detection and Localization in CT with Two-Stage CNNs and Dense Annotations", MICCAI workshop MSKI, 2019](https://arxiv.org/abs/1910.05911) and resued some of the code.
@@ -7,10 +7,12 @@ I extended the work of [McCouat and Glocker, "Vertebrae Detection and Localizati
 The purpose of this repository is so that other researchers can reproduce the results.
 
 ## Setup
+We need a fortran compiler (like `gfortran`, `flang`, `nvfortran`, `pgfortran`, `ifort`, or `g95`) and `openblas`.
+Make sure they are installed.
 Clone this repository and create a [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) environment:
 
 ````bash
-conda create -n uda-vdi python
+conda create -n uda-vdi python==3.7
 conda activate uda-vdi
 conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
 pip install -r requirements.txt
@@ -102,14 +104,17 @@ The downloaded scans have to be divided into smaller patches. Therefore, use the
 
 **BioMedia Data Set:**
 ```bash
+mkdir -p data/biomedia/samples/{detection,identification}/{training,testing}
 cd src
 python generate_detection_samples.py --training_dataset_dir ../data/biomedia/training_dataset --testing_dataset_dir ../data/biomedia/testing_dataset --training_sample_dir ../data/biomedia/samples/detection/training --testing_sample_dir ../data/biomedia/samples/detection/testing --volume_format .nii.gz --label_format .lml
 ```
 
 **Covid19-CT Data Set:**
 ```bash
+mkdir -p data/covid19-ct/samples/{detection,identification}/{training,testing}_labeled
 cd src
 python generate_detection_samples.py --testing_dataset_dir ../data/covid19-ct/testing_dataset_labeled --testing_sample_dir ../data/covid19-ct/samples/detection/testing_labeled --volume_format .dcm --label_format .nii.gz
+python generate_detection_samples.py --training_dataset_dir ../data/covid19-ct/training_dataset_labeled --training_sample_dir ../data/covid19-ct/samples/detection/training_labeled --volume_format .dcm --label_format .nii.gz --without_label
 ```
 
 ### Training
@@ -126,6 +131,7 @@ python train.py --epochs 100 --lr 0.001 --batch_size 16 --use_wandb --no_da --us
 - when using the `biomedia` data set, then set `volume_format`: `.nii.gz` and `label_format`: `.lml`
 ```bash
 python measure.py --testing_dataset_dir <testing_dataset_dir> --volume_format <volume_format> --label_format <label_format> --resume_detection <path/to/detection_model.pth> --ignore_small_masks_detection
+python measure.py --testing_dataset_dir ../data/covid19-ct/testing_dataset_labeled --volume_format .dcm --label_format .nii.gz --resume_detection src/train_output/biomedia2covid19-ct/pth/normal-detection-100.pth.tar --without_label --ignore_small_masks_detection
 ```
 
 ### Store Detection for UDA
@@ -147,6 +153,7 @@ The downloaded scans have to be divided into smaller patches. Therefore, use the
 ```bash
 cd src
 python generate_identification_samples.py --training_dataset_dir ../data/biomedia/training_dataset --testing_dataset_dir ../data/biomedia/testing_dataset --training_sample_dir ../data/biomedia/samples/identification/training --testing_sample_dir ../data/biomedia/samples/identification/testing --volume_format .nii.gz --label_format .lml
+python generate_identification_samples.py --testing_dataset_dir ../data/biomedia/testing_dataset --testing_sample_dir ../data/biomedia/samples/identification/testing --volume_format .nii.gz --label_format .lml
 ```
 
 ```bash
@@ -160,7 +167,7 @@ python generate_identification_samples.py --training_dataset_dir ../data/covid19
 Run the training of the identification module (optionally, add `--train_some_tgt_labels` to use some target labels during training):
 
 ```bash
-python train.py --mode identification --use_vertebrae_loss --epochs 100 --lr 0.0005 --batch_size 32 --use_labeled_tgt --use_wandb 
+python train.py --mode identification --use_vertebrae_loss --epochs 100 --lr 0.0005 --batch_size 32 --use_labeled_tgt --use_wandb
 ```
 
 ## Evaluation
