@@ -678,7 +678,7 @@ def complete_identification_picture(scans_dir, plot_path, start, end, ignore_sma
         if save_predictions:
             create_lml_file(scan_path + "prediction.lml", pred_labels, pred_centroid_estimates)
 
-        pred_centroid_estimates = np.array(pred_centroid_estimates)
+        pred_centroid_estimates = np.array(pred_centroid_estimates).reshape((-1, 3))
         axes.plot(pred_centroid_estimates[:, 1], pred_centroid_estimates[:, 2], color="red")
 
         # get average distance
@@ -692,7 +692,7 @@ def complete_identification_picture(scans_dir, plot_path, start, end, ignore_sma
                     total_difference += np.linalg.norm(pred_centroid_idx - centroid_indexes[label_idx])
                     no += 1
 
-            average_difference = total_difference / no
+            average_difference = total_difference / no if no != 0.0 else 0.0
             print("average", average_difference)
             axes.set_xlabel("{:.2f}".format(average_difference) + "mm", fontsize=10)
 
