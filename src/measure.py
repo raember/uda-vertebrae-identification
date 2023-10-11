@@ -33,6 +33,7 @@ parser.add_argument("--volume_format", default=".dcm", help="Format of the CT-sc
 parser.add_argument("--label_format", default=".nii.gz", help="Format of the labels (either .lml or .nii)")
 parser.add_argument("--resume_detection", type=str, default=None, metavar="PTH.TAR", help="model(pth) path")
 parser.add_argument("--resume_identification", type=str, default=None, metavar="PTH.TAR", help="model(pth) path")
+parser.add_argument("--dicom", type=str, default='../data/covid19-ct/training_dataset_labeled', metavar="PTH.DCM", help="DICOM file (either .dcm or .nii.gz)")
 parser.add_argument('--without_label', action="store_true", help="Whether to use Labels")
 parser.add_argument('--save_detections', action="store_true", help="Whether to save the detection as numpy file")
 parser.add_argument('--save_predictions', action="store_true", help="Whether to save the predicted centroids as .lml file")
